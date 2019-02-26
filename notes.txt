@@ -1,0 +1,28 @@
+Restrict the name that are giving to the newly created channels.
+
+Have the new channels delete themselves when they're empty. counter should help with this.
+
+**********************************************************************
+
+Problems
+
+1. Person that makes new channel is not able to talk in it
+
+2. Channel creation message is appearing with the total amount of the event.
+
+3. Incrementing the stream channel number -Done sort of
+
+4. Manual channel creations are being effected by createChannel()-Done
+
+
+**********************************************************************
+
+Minor things
+
+Naming of the channels. Ex: Channel 2 is the only chan left, count would be equal to 1. Next channel would be Channel 2 too.
+
+Deleting channels when empty
+
+CREATE A GIT IGNORE FILE############
+
+ReadME 
