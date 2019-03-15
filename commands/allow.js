@@ -10,14 +10,22 @@ module.exports.run = async (bot, message, args) => {
   let allowedUser = message.guild.member(
     message.mentions.users.first() || message.guild.members.get(args[0])
   );
-  currentVC.overwritePermissions(allowedUser, {
-    // Lets specifc user see, join, or speak locked chan
-    CREATE_INSTANT_INVITE: false,
-    VIEW_CHANNEL: true,
-    CONNECT: true,
-    SPEAK: true
-  });
-  console.log(allowedUser);
+  if (currentVC.name.includes("StreamChannel")) {
+    currentVC.overwritePermissions(allowedUser, {
+      // Lets specifc user see, join, or speak locked chan
+      CREATE_INSTANT_INVITE: false,
+      VIEW_CHANNEL: true,
+      CONNECT: true,
+      SPEAK: true
+    });
+    message.channel.send(
+      `${allowedUser} you were granted access to this voice channel`
+    );
+  } else {
+    message.channel.send(
+      `${message.member} you must be in a Stream Channel to use this command!`
+    );
+  }
 };
 module.exports.help = {
   name: "allow"

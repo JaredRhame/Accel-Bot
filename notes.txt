@@ -6,7 +6,7 @@ Have the new channels delete themselves when they're empty. counter should help 
 
 Problems
 
-1. Person that makes new channel is not able to talk in it
+1. Person that makes new channel is not able to talk in it-Done
 
 2. Channel creation message is appearing with the total amount of the event.
 
@@ -23,6 +23,13 @@ Naming of the channels. Ex: Channel 2 is the only chan left, count would be equa
 
 Deleting channels when empty
 
-CREATE A GIT IGNORE FILE############
+CREATE A GIT IGNORE FILE############-Done
 
-ReadME 
+ReadME
+
+When the channel is created, the user should receive ownership of the channel (except mods)
+
+If the original owner leaves the channel, the someone should be able to claim it
+
+
+Keeps the same name every time user joins, even if the channel was deleted.

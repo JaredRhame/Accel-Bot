@@ -49,12 +49,11 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
     // Limits the count to 5 maximum VCs
     if (dChannel.full && count <= 5) {
       newMember.guild
-        .createChannel(`StreamChannel ${count}`, "voice")
+        .createChannel(`StreamChannel (${newMember.displayName})`, "voice")
         // .then(count++)
         .catch(console.error);
       console.log(count);
       bot.on("channelCreate", async channel => {
-        // module.exports.channel = { blurb };
         // Creates role once new channel is created
         // newMember.guild
         //   .createRole({
@@ -71,23 +70,13 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
           channel.overwritePermissions(
             newMember.guild.roles.find(role => role.name === "@everyone"),
             {
-              // Disallow Everyone to see, join, invite, or speak
+              // Disallow Everyone to join, invite, or speak
               CREATE_INSTANT_INVITE: false,
               VIEW_CHANNEL: true,
               CONNECT: false,
               SPEAK: true
             }
           );
-          // Allows specific role to join the newly created channel
-          // channel.overwritePermissions(
-          //   newMember.guild.roles.find(role => role.name === "Stream1"),
-          //   {
-          //     //Explicitely allow the role to see, join and speak
-          //     VIEW_CHANNEL: true,
-          //     CONNECT: true,
-          //     SPEAK: true
-          //   }
-          // );
 
           for (let [snowflake, guildMember] of getMoved) {
             let mem = guildMember;
