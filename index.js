@@ -46,7 +46,6 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
   dChannel.setUserLimit(1);
 
   setTimeout(function createChannel() {
-    // Limits the count to 5 maximum VCs
     ChanName.find({ userID: newMember.id }, function(err, docs) {
       if (dChannel.full && docs.length < 1) {
         // console.log(docs[0].channelName);
@@ -79,6 +78,7 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
             //   }`
             // );
           }
+          return channel;
         });
       } else if (dChannel.full && docs.length > 0) {
         newMember.guild
@@ -92,10 +92,31 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
               .then(() => console.log(`Moved ${newMember.displayName}`))
               .catch(console.error);
           }
+          return channel;
         });
       }
     });
   }, 3000);
+  // console.log(oldMember.voiceChannel.members);
+  // if (oldMember) {
+  ChanName.find({ channelName: oldVoice.name }, function(err, docs) {
+    // oldMember.voiceChannel.members.forEach(function(members, person) {
+    // });
+    // for (let names = 0; names <= docs.length; names++) {
+    // console.log(docs[names].userID);
+    //add logic for if the channel doesn't change (default)
+    // console.log(docs[0]);
+    if (docs[0] == undefined) {
+      return;
+    } else if (
+      oldVoice.name.includes("StreamChannel") ||
+      (docs[0].channelName == oldVoice.name && oldVoice.members.size < 1)
+    ) {
+      oldVoice
+        .delete()
+        .then(deleted => botChannel.send("Making room for new channels"));
+    }
+  });
 });
 
 bot.on("message", async message => {
