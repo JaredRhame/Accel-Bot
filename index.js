@@ -41,77 +41,68 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
 
   let oldVoice = oldMember.voiceChannel;
   let newVoice = newMember.voiceChannel;
-  let getMoved = newVoice.members;
+  let defaultChan = newMember.guild.channels.find(
+    chan => chan.name === `StreamChannel (${newMember.displayName})`
+  );
+
+  function moveMember(channel) {
+    for (let [snowflake, guildMember] of newVoice.members) {
+      let mem = guildMember;
+      mem
+        .setVoiceChannel(channel)
+        .then(() => console.log(`Moved ${newMember.displayName}`))
+        .catch(console.error);
+    }
+  }
 
   dChannel.setUserLimit(1);
+  //if oldVoice is undefined and newVoice is not == dChannel
+  if (oldVoice == undefined && newVoice !== dChannel) return;
 
-  setTimeout(function createChannel() {
-    ChanName.find({ userID: newMember.id }, function(err, docs) {
-      if (dChannel.full && docs.length < 1) {
-        // console.log(docs[0].channelName);
-        newMember.guild
-          .createChannel(`StreamChannel (${newMember.displayName})`, "voice")
-          .catch(console.error);
-        bot.on("channelCreate", async channel => {
-          //   //LOCKS EVERYONE FROM NEW CHANNEL
-          //   // if (channel.name.includes("StreamChannel")) {
-          //   //   channel.overwritePermissions(
-          //   //     newMember.guild.roles.find(role => role.name === "@everyone"),
-          //   //     {
-          //   //       // Disallow Everyone to join, invite, or speak
-          //   //       CREATE_INSTANT_INVITE: false,
-          //   //       VIEW_CHANNEL: true,
-          //   //       CONNECT: false,
-          //   //       SPEAK: true
-          //   //     }
-          //   //   );
-          //
-          for (let [snowflake, guildMember] of getMoved) {
-            let mem = guildMember;
-            mem
-              .setVoiceChannel(channel)
-              .then(() => console.log(`Moved ${newMember.displayName}`))
-              .catch(console.error);
-            // genChannel.send(
-            //   `${channel.name} voice channel has been created by ${
-            //     mem.user.username
-            //   }`
-            // );
-          }
-          return channel;
-        });
-      } else if (dChannel.full && docs.length > 0) {
-        newMember.guild
-          .createChannel(`${docs[0].channelName}`, "voice")
-          .catch(console.error);
-        bot.on("channelCreate", async channel => {
-          for (let [snowflake, guildMember] of getMoved) {
-            let mem = guildMember;
-            mem
-              .setVoiceChannel(channel)
-              .then(() => console.log(`Moved ${newMember.displayName}`))
-              .catch(console.error);
-          }
-          return channel;
-        });
-      }
-    });
-  }, 3000);
-  // console.log(oldMember.voiceChannel.members);
-  // if (oldMember) {
+  // setTimeout(function createChannel() {
+  ChanName.find({ userID: newMember.id }, function(err, docs) {
+    if (dChannel.full && docs.length < 1) {
+      // if (newMember.guild.channels.exists("name", defaultChan)) {
+      //   botChannel.send("That channel already exists...moving you over");
+      //   console.log(defaultChan);
+      //   // newMember.setVoiceChannel(defaultName.id);
+      //   return;
+      // }
+
+      newMember.guild
+        .createChannel(`Stream Channel(${newMember.displayName})`, "voice")
+        .catch(console.error);
+      bot.on("channelCreate", async channel => {
+        bot.removeAllListeners("channelCreate");
+
+        moveMember(channel);
+      });
+    } else if (dChannel.full && docs.length > 0) {
+      newMember.guild
+        .createChannel(`${docs[0].channelName}`, "voice")
+        .catch(console.error);
+
+      bot.on("channelCreate", async channel => {
+        bot.removeAllListeners("channelCreate");
+
+        moveMember(channel);
+      });
+    }
+  });
+  // }, 3000);
+
+  if (oldVoice == undefined) return;
+  //Checks if a dynamic channel is empty. Auto deletes if it is.
+
   ChanName.find({ channelName: oldVoice.name }, function(err, docs) {
-    // oldMember.voiceChannel.members.forEach(function(members, person) {
-    // });
-    // for (let names = 0; names <= docs.length; names++) {
-    // console.log(docs[names].userID);
     //add logic for if the channel doesn't change (default)
-    // console.log(docs[0]);
-    if (docs[0] == undefined) {
-      return;
-    } else if (
-      oldVoice.name.includes("StreamChannel") ||
-      (docs[0].channelName == oldVoice.name && oldVoice.members.size < 1)
-    ) {
+    // need handling for if a user joins without being in a voice channel
+
+    if (docs[0] == undefined) return;
+
+    if (oldVoice.members == undefined) return;
+
+    if (docs[0].channelName == oldVoice.name && oldVoice.members.size < 1) {
       oldVoice
         .delete()
         .then(deleted => botChannel.send("Making room for new channels"));
