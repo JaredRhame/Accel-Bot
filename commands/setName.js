@@ -33,8 +33,6 @@ module.exports.run = async (bot, message, args) => {
       ChanName.deleteOne(docs[0], function(err) {
         console.log(err);
       });
-    } else {
-      console.log("no names");
     }
   });
   // console.log(newName);
