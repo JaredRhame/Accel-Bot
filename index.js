@@ -3,6 +3,8 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const bot = new Discord.Client({ disableEveryone: true });
 const ChanName = require("./models/chanNames.js");
+const ENV = require("dotenv");
+ENV.config();
 
 bot.commands = new Discord.Collection();
 
@@ -75,24 +77,52 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
       bot.on("channelCreate", async channel => {
         bot.removeAllListeners("channelCreate");
 
+        channel.overwritePermissions(
+          channel.guild.roles.find(role => role.name === "@everyone"),
+
+          {
+            // Locks Everyone from -> see, join, or speak
+            CREATE_INSTANT_INVITE: false,
+            VIEW_CHANNEL: true,
+            CONNECT: false,
+            SPEAK: true
+          }
+        );
+
         moveMember(channel);
       });
+
+      botChannel.send(
+        "Please use the setName command to create name for the channel."
+      );
     } else if (dChannel.full && docs.length > 0) {
+      let channelExists = newMember.guild.channels.find(
+        chan => chan.name === `${docs[0].channelName}`
+      );
+
+      if (channelExists) {
+        moveMember(channelExists);
+        return;
+      }
       newMember.guild
         .createChannel(`${docs[0].channelName}`, "voice")
         .catch(console.error);
 
       bot.on("channelCreate", async channel => {
         bot.removeAllListeners("channelCreate");
-
         moveMember(channel);
       });
     }
   });
   // }, 3000);
-
   if (oldVoice == undefined) return;
   //Checks if a dynamic channel is empty. Auto deletes if it is.
+
+  if (oldVoice.name.includes("Stream Channel") && oldVoice.members.size < 1) {
+    oldVoice
+      .delete()
+      .then(deleted => botChannel.send("Making room for new channels"));
+  }
 
   ChanName.find({ channelName: oldVoice.name }, function(err, docs) {
     //add logic for if the channel doesn't change (default)
@@ -123,4 +153,4 @@ bot.on("message", async message => {
   if (commandFile) commandFile.run(bot, message, args);
 });
 
-bot.login(botconfig.token);
+bot.login(process.env.CLIENT_TOKEN);
