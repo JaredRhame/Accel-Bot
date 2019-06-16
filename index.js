@@ -46,6 +46,9 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
   let defaultChan = newMember.guild.channels.find(
     chan => chan.name === `StreamChannel (${newMember.displayName})`
   );
+  let category = newMember.guild.channels.find(
+    group => group.name == "Voice Channels" && group.type == "category"
+  );
 
   function moveMember(channel) {
     for (let [snowflake, guildMember] of newVoice.members) {
@@ -73,6 +76,10 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
 
       newMember.guild
         .createChannel(`Stream Channel(${newMember.displayName})`, "voice")
+        .then(channel => {
+          if (!category) throw new Error("Category channel does not exist");
+          channel.setParent(category.id);
+        })
         .catch(console.error);
       bot.on("channelCreate", async channel => {
         bot.removeAllListeners("channelCreate");
@@ -106,6 +113,10 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
       }
       newMember.guild
         .createChannel(`${docs[0].channelName}`, "voice")
+        .then(channel => {
+          if (!category) throw new Error("Category channel does not exist");
+          channel.setParent(category.id);
+        })
         .catch(console.error);
 
       bot.on("channelCreate", async channel => {
