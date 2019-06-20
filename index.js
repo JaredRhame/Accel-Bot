@@ -64,68 +64,68 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
   //if oldVoice is undefined and newVoice is not == dChannel
   if (oldVoice == undefined && newVoice !== dChannel) return;
 
-  // setTimeout(function createChannel() {
-  ChanName.find({ userID: newMember.id }, function(err, docs) {
-    if (dChannel.full && docs.length < 1) {
-      // if (newMember.guild.channels.exists("name", defaultChan)) {
-      //   botChannel.send("That channel already exists...moving you over");
-      //   console.log(defaultChan);
-      //   // newMember.setVoiceChannel(defaultName.id);
-      //   return;
-      // }
+  setTimeout(function createChannel() {
+    ChanName.find({ userID: newMember.id }, function(err, docs) {
+      if (dChannel.full && docs.length < 1) {
+        // if (newMember.guild.channels.exists("name", defaultChan)) {
+        //   botChannel.send("That channel already exists...moving you over");
+        //   console.log(defaultChan);
+        //   // newMember.setVoiceChannel(defaultName.id);
+        //   return;
+        // }
 
-      newMember.guild
-        .createChannel(`Stream Channel(${newMember.displayName})`, "voice")
-        .then(channel => {
-          if (!category) throw new Error("Category channel does not exist");
-          channel.setParent(category.id);
-        })
-        .catch(console.error);
-      bot.on("channelCreate", async channel => {
-        bot.removeAllListeners("channelCreate");
+        newMember.guild
+          .createChannel(`Stream Channel(${newMember.displayName})`, "voice")
+          .then(channel => {
+            if (!category) throw new Error("Category channel does not exist");
+            channel.setParent(category.id);
+          })
+          .catch(console.error);
+        bot.on("channelCreate", async channel => {
+          bot.removeAllListeners("channelCreate");
 
-        channel.overwritePermissions(
-          channel.guild.roles.find(role => role.name === "@everyone"),
+          channel.overwritePermissions(
+            channel.guild.roles.find(role => role.name === "@everyone"),
 
-          {
-            // Locks Everyone from -> see, join, or speak
-            CREATE_INSTANT_INVITE: false,
-            VIEW_CHANNEL: true,
-            CONNECT: false,
-            SPEAK: true
-          }
+            {
+              // Locks Everyone from -> see, join, or speak
+              CREATE_INSTANT_INVITE: false,
+              VIEW_CHANNEL: true,
+              CONNECT: false,
+              SPEAK: true
+            }
+          );
+
+          moveMember(channel);
+        });
+
+        botChannel.send(
+          "Please use the setName command to create name for the channel."
+        );
+      } else if (dChannel.full && docs.length > 0) {
+        let channelExists = newMember.guild.channels.find(
+          chan => chan.name === `${docs[0].channelName}`
         );
 
-        moveMember(channel);
-      });
+        if (channelExists) {
+          moveMember(channelExists);
+          return;
+        }
+        newMember.guild
+          .createChannel(`${docs[0].channelName}`, "voice")
+          .then(channel => {
+            if (!category) throw new Error("Category channel does not exist");
+            channel.setParent(category.id);
+          })
+          .catch(console.error);
 
-      botChannel.send(
-        "Please use the setName command to create name for the channel."
-      );
-    } else if (dChannel.full && docs.length > 0) {
-      let channelExists = newMember.guild.channels.find(
-        chan => chan.name === `${docs[0].channelName}`
-      );
-
-      if (channelExists) {
-        moveMember(channelExists);
-        return;
+        bot.on("channelCreate", async channel => {
+          bot.removeAllListeners("channelCreate");
+          moveMember(channel);
+        });
       }
-      newMember.guild
-        .createChannel(`${docs[0].channelName}`, "voice")
-        .then(channel => {
-          if (!category) throw new Error("Category channel does not exist");
-          channel.setParent(category.id);
-        })
-        .catch(console.error);
-
-      bot.on("channelCreate", async channel => {
-        bot.removeAllListeners("channelCreate");
-        moveMember(channel);
-      });
-    }
-  });
-  // }, 3000);
+    });
+  }, 3000);
   if (oldVoice == undefined) return;
   //Checks if a dynamic channel is empty. Auto deletes if it is.
 
