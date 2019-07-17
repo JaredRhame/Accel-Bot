@@ -5,7 +5,14 @@ const chanNameSchema = mongoose.Schema({
   username: String,
   userID: String,
   channelName: String,
-  channelID: String
+  channelID: String,
+  channelLocked: Boolean,
+  allowedUsers: [String],
+  deniedUsers: [String]
 });
 
 module.exports = mongoose.model("ChanNames", chanNameSchema);
+
+//channelLocked: boolean
+//allowedUsers: [String]
+//deniedUsers: [String]

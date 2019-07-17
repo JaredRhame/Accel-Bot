@@ -4,7 +4,7 @@ const ChanName = require("../models/chanNames.js");
 module.exports.run = async (bot, message, args) => {
   let currentVC = message.member.voiceChannel;
   ChanName.find({ channelName: currentVC.name }, function(err, docs) {
-    if (currentVC.name.includes("StreamChannel") || docs[0] != undefined) {
+    if (currentVC.name.includes("Stream Channel") || docs[0] != undefined) {
       currentVC.overwritePermissions(
         message.guild.roles.find(role => role.name === "@everyone"),
         {
@@ -14,6 +14,11 @@ module.exports.run = async (bot, message, args) => {
           CONNECT: false,
           SPEAK: true
         }
+      );
+      message.channel.send(
+        `${
+          message.member
+        } your channel has been locked, use the ~allow command to provide access for certain users`
       );
     } else {
       message.channel.send(

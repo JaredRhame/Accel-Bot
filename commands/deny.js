@@ -7,7 +7,7 @@ module.exports.run = async (bot, message, args) => {
     message.mentions.users.first() || message.guild.members.get(args[0])
   );
   ChanName.find({ channelName: currentVC.name }, function(err, docs) {
-    if (currentVC.name.includes("StreamChannel") || docs[0] != undefined) {
+    if (currentVC.name.includes("Stream Channel") || docs[0] != undefined) {
       currentVC.overwritePermissions(deniedUser, {
         // Lets specifc user see, join, or speak locked chan
         CREATE_INSTANT_INVITE: false,
@@ -16,7 +16,7 @@ module.exports.run = async (bot, message, args) => {
         SPEAK: true
       });
       message.channel.send(
-        `${deniedUser} you were denied access to this voice channel`
+        `${deniedUser} you were denied access to ${currentVC.name}`
       );
     } else {
       message.channel.send(

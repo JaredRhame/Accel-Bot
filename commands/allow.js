@@ -12,7 +12,7 @@ module.exports.run = async (bot, message, args) => {
     message.mentions.users.first() || message.guild.members.get(args[0])
   );
   ChanName.find({ channelName: currentVC.name }, function(err, docs) {
-    if (currentVC.name.includes("StreamChannel") || docs[0] != undefined) {
+    if (currentVC.name.includes("Stream Channel") || docs[0] != undefined) {
       currentVC.overwritePermissions(allowedUser, {
         // Lets specifc user see, join, or speak locked chan
         CREATE_INSTANT_INVITE: false,
