@@ -29,6 +29,9 @@ bot.on("ready", async () => {
 
   bot.user.setActivity("Chunky milk", { type: "Eating" });
 });
+process.on("unhandledRejection", error =>
+  console.error("Uncaught Promise Rejection", error)
+);
 
 bot.on("voiceStateUpdate", async (oldMember, newMember) => {
   const dChannel = newMember.guild.channels.find(
@@ -51,29 +54,38 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
   );
 
   function moveMember(channel) {
-    for (let [snowflake, guildMember] of newVoice.members) {
-      let mem = guildMember;
-      mem
-        .setVoiceChannel(channel)
-        .then(() => console.log(`Moved ${newMember.displayName}`))
-        .catch(console.error);
+    // if (!category) console.log("chan cat doesn't exist");
+    if (newVoice.name === dChannel.name) {
+      for (let [snowflake, guildMember] of newVoice.members) {
+        let mem = guildMember;
+        // console.log(newVoice.members);
+        //REWORK
+
+        mem
+          .setVoiceChannel(channel)
+          .then(() => console.log(`Moved ${newMember.displayName}`))
+          .catch(console.error);
+      }
+    } else {
+      console.log("SHOULD NOT SHOW");
     }
   }
 
   dChannel.setUserLimit(1);
-  //if oldVoice is undefined and newVoice is not == dChannel
   if (oldVoice == undefined && newVoice !== dChannel) return;
 
   setTimeout(function createChannel() {
     ChanName.find({ userID: newMember.id }, function(err, docs) {
-      if (dChannel.full && docs.length < 1) {
-        // if (newMember.guild.channels.exists("name", defaultChan)) {
-        //   botChannel.send("That channel already exists...moving you over");
-        //   console.log(defaultChan);
-        //   // newMember.setVoiceChannel(defaultName.id);
-        //   return;
-        // }
+      if (newVoice == undefined) return;
 
+      if (newVoice.name === dChannel.name && docs.length < 1) {
+        let defaultExists = newMember.guild.channels.find(
+          chan => chan.name === `Stream Channel(${newMember.displayName})`
+        );
+        if (defaultExists) {
+          moveMember(defaultExists);
+          return;
+        }
         newMember.guild
           .createChannel(`Stream Channel(${newMember.displayName})`, "voice")
           .then(channel => {
@@ -84,29 +96,28 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
         bot.on("channelCreate", async channel => {
           bot.removeAllListeners("channelCreate");
 
-          channel.overwritePermissions(
-            channel.guild.roles.find(role => role.name === "@everyone"),
-
-            {
-              // Locks Everyone from -> see, join, or speak
-              CREATE_INSTANT_INVITE: false,
-              VIEW_CHANNEL: true,
-              CONNECT: false,
-              SPEAK: true
-            }
-          );
+          // channel.overwritePermissions(
+          //   channel.guild.roles.find(role => role.name === "@everyone"),
+          //
+          //   {
+          //     // Locks Everyone from joining
+          //     CREATE_INSTANT_INVITE: false,
+          //     VIEW_CHANNEL: true,
+          //     CONNECT: false,
+          //     SPEAK: true
+          //   }
+          // );
 
           moveMember(channel);
         });
 
         botChannel.send(
-          "Please use the setName command to create name for the channel."
+          `Hey, ${newMember} please use the setName command to create name for the channel.`
         );
-      } else if (dChannel.full && docs.length > 0) {
+      } else if (newVoice.name === dChannel.name && docs.length > 0) {
         let channelExists = newMember.guild.channels.find(
           chan => chan.name === `${docs[0].channelName}`
         );
-
         if (channelExists) {
           moveMember(channelExists);
           return;
@@ -125,7 +136,8 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
         });
       }
     });
-  }, 3000);
+  }, 5000);
+
   if (oldVoice == undefined) return;
   //Checks if a dynamic channel is empty. Auto deletes if it is.
 

@@ -9,7 +9,7 @@ module.exports.run = async (bot, message, args) => {
   // const channel = message.guild.channels.find(chan => chan.name === "TEST");
   let currentVC = message.member.voiceChannel;
   ChanName.find({ channelName: currentVC.name }, function(err, docs) {
-    if (currentVC.name.includes("StreamChannel") || docs[0] != undefined) {
+    if (currentVC.name.includes("Stream Channel") || docs[0] != undefined) {
       currentVC.overwritePermissions(
         message.guild.roles.find(role => role.name === "@everyone"),
         {
