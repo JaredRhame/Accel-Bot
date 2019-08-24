@@ -17,7 +17,7 @@ module.exports.run = async (bot, message, args) => {
   let sUser = message.author;
   let currentVC = message.member.voiceChannel;
   let channelID = currentVC.id;
-  let newName = args.join(" ");
+  let newName = args.join(" ").replace(/^\s+|\s+$/g, "");
 
   //creates new chanName obj with the new given name and attaches it to the user
   const chanName = new ChanName({
@@ -28,15 +28,15 @@ module.exports.run = async (bot, message, args) => {
     channelID: channelID
   });
 
-  //error handling for if the newName is an empty string
-  // NEED ERROR HANDLING FOR IF USER IS NOT IN A DYNAMIC CHANNEL. ALSO HAVE A CHECK FOR THAT USER'S ID SO THEY ARE THE ONLY ONE ALLOWED TO CHANGE THE NAME AND MODS
   setTimeout(function setName() {
     ChanName.find({ userID: sUser.id }, function(err, docs) {
-      //   // console.log(docs);
-      //   let nameChange = newName => {
-      //     currentVC.setName(newName);
-      //   };
-      //
+      if (newName == "") {
+        message.channel.send(
+          `${message.member} channel name can not be blank.`
+        );
+        return;
+      }
+      //First time saving name
       if (docs[0] == undefined) {
         currentVC.overwritePermissions(
           message.guild.roles.find(role => role.name === "@everyone"),
@@ -48,20 +48,19 @@ module.exports.run = async (bot, message, args) => {
             SPEAK: true
           }
         );
-        //Sets name of current VC
+
         currentVC.setName(newName);
 
         //Saves the new channel name to the DB
         chanName.save();
         message.reply("That name has been saved to the database.");
       } else if (
+        //Second time saving name
         docs[0].userID == sUser.id &&
         docs[0].channelName == currentVC.name
       ) {
-        //Sets name of current VC
         currentVC.setName(newName);
 
-        //Saves the new channel name to the DB
         chanName.save();
         message.reply("That name has been saved to the database.");
       } else {
@@ -70,7 +69,6 @@ module.exports.run = async (bot, message, args) => {
       }
 
       if (docs.length == 1) {
-        // console.log(docs.length);
         ChanName.deleteOne(docs[0], function(err) {
           console.log(err);
         });

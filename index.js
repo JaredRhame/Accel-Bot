@@ -54,12 +54,9 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
   );
 
   function moveMember(channel) {
-    // if (!category) console.log("chan cat doesn't exist");
     if (newVoice.name === dChannel.name) {
       for (let [snowflake, guildMember] of newVoice.members) {
         let mem = guildMember;
-        // console.log(newVoice.members);
-        //REWORK
 
         mem
           .setVoiceChannel(channel)
@@ -96,18 +93,6 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
         bot.on("channelCreate", async channel => {
           bot.removeAllListeners("channelCreate");
 
-          // channel.overwritePermissions(
-          //   channel.guild.roles.find(role => role.name === "@everyone"),
-          //
-          //   {
-          //     // Locks Everyone from joining
-          //     CREATE_INSTANT_INVITE: false,
-          //     VIEW_CHANNEL: true,
-          //     CONNECT: false,
-          //     SPEAK: true
-          //   }
-          // );
-
           moveMember(channel);
         });
 
@@ -122,13 +107,54 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
           moveMember(channelExists);
           return;
         }
-        newMember.guild
-          .createChannel(`${docs[0].channelName}`, "voice")
-          .then(channel => {
-            if (!category) throw new Error("Category channel does not exist");
-            channel.setParent(category.id);
-          })
-          .catch(console.error);
+        checkSettings();
+        async function checkSettings() {
+          try {
+            let newChan = await newMember.guild.createChannel(
+              `${docs[0].channelName}`,
+              "voice"
+            );
+
+            let setCategory = await newChan.setParent(category.id);
+            let setLock = await newChan.overwritePermissions(
+              newChan.guild.roles.find(role => role.name === "@everyone"),
+              {
+                // Locks Everyone from -> see, join, or speak
+                CREATE_INSTANT_INVITE: false,
+                VIEW_CHANNEL: true,
+                CONNECT: docs[0].channelOpen,
+                SPEAK: true
+              }
+            );
+            let setDeny = await setDenied(newChan);
+            function setDenied(newChan) {
+              for (let user = 0; user < docs[0].deniedUsers.length; user++) {
+                newChan.overwritePermissions(docs[0].deniedUsers[user], {
+                  // Lets specifc user see, join, or speak locked chan
+                  CREATE_INSTANT_INVITE: false,
+                  VIEW_CHANNEL: true,
+                  CONNECT: false,
+                  SPEAK: true
+                });
+              }
+            }
+
+            let setAllow = await setAllowed(newChan);
+            function setAllowed(newChan) {
+              for (let user = 0; user < docs[0].allowedUsers.length; user++) {
+                newChan.overwritePermissions(docs[0].allowedUsers[user], {
+                  // Lets specifc user see, join, or speak locked chan
+                  CREATE_INSTANT_INVITE: false,
+                  VIEW_CHANNEL: true,
+                  CONNECT: true,
+                  SPEAK: true
+                });
+              }
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
 
         bot.on("channelCreate", async channel => {
           bot.removeAllListeners("channelCreate");
@@ -148,9 +174,6 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
   }
 
   ChanName.find({ channelName: oldVoice.name }, function(err, docs) {
-    //add logic for if the channel doesn't change (default)
-    // need handling for if a user joins without being in a voice channel
-
     if (docs[0] == undefined) return;
 
     if (oldVoice.members == undefined) return;
