@@ -36,6 +36,13 @@ module.exports.run = async (bot, message, args) => {
         );
         return;
       }
+      // Denies user from changing channel name to createchannel
+      if (newName.toUpperCase() == "CREATECHANNEL") {
+        message.channel.send(
+          `${message.member} that channel name is not allowed.`
+        );
+        return;
+      }
       //First time saving name
       if (docs[0] == undefined) {
         currentVC.overwritePermissions(
