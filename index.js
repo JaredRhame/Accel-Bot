@@ -56,9 +56,9 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
   function moveMember(channel) {
     if (newVoice.name === dChannel.name) {
       for (let [snowflake, guildMember] of newVoice.members) {
-        let mem = guildMember;
-
-        mem
+        // let mem = guildMember;
+        // console.log(newVoice.members);
+        guildMember
           .setVoiceChannel(channel)
           .then(() => console.log(`Moved ${newMember.displayName}`))
           .catch(console.error);
@@ -75,12 +75,14 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
     ChanName.find({ userID: newMember.id }, function(err, docs) {
       if (newVoice == undefined) return;
 
+      //Checks for saved channel name in the server, if name doesn't exist, it creates a default and moves member
       if (newVoice.name === dChannel.name && docs.length < 1) {
         let defaultExists = newMember.guild.channels.find(
           chan => chan.name === `Stream Channel(${newMember.displayName})`
         );
         if (defaultExists) {
-          moveMember(defaultExists);
+          
+          // moveMember(defaultExists);
           return;
         }
         newMember.guild
@@ -92,19 +94,21 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
           .catch(console.error);
         bot.on("channelCreate", async channel => {
           bot.removeAllListeners("channelCreate");
-
-          moveMember(channel);
+          
+          moveMember(channel); 
         });
 
         botChannel.send(
           `Hey, ${newMember} please use the setName command to create name for the channel.`
         );
       } else if (newVoice.name === dChannel.name && docs.length > 0) {
+        //Checks DB for existing saved channel name for user, if exists, moves member
         let channelExists = newMember.guild.channels.find(
           chan => chan.name === `${docs[0].channelName}`
         );
         if (channelExists) {
-          moveMember(channelExists);
+          
+          //  moveMember(channelExists); 
           return;
         }
         checkSettings();
@@ -114,8 +118,9 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
               `${docs[0].channelName}`,
               "voice"
             );
-
-            let setCategory = await newChan.setParent(category.id);
+            
+            //Sets category of the new channel to the "Voice Channels" category
+            let setCategory = await newChan.setParent(category.id); 
             let setLock = await newChan.overwritePermissions(
               newChan.guild.roles.find(role => role.name === "@everyone"),
               {
@@ -158,7 +163,8 @@ bot.on("voiceStateUpdate", async (oldMember, newMember) => {
 
         bot.on("channelCreate", async channel => {
           bot.removeAllListeners("channelCreate");
-          moveMember(channel);
+          
+          moveMember(channel); 
         });
       }
     });
